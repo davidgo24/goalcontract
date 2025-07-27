@@ -11,3 +11,10 @@ starlette==0.47.2
 typing-inspection==0.4.1
 typing_extensions==4.14.1
 uvicorn==0.35.0
+
+
+# Resend + Email deps
+resend @ git+https://github.com/resendlabs/resend-python.git@v0.4.0
+requests==2.31.0
+urllib3==2.1.0
+six==1.17.0

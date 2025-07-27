@@ -4,22 +4,17 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from openai.types.chat import ChatCompletion
 
-# Setup logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-# Load .env variables
 load_dotenv()
 
-# Fetch API key
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY is not set in your environment variables.")
 logging.info(f"OpenAI API key loaded (first 5 chars): {OPENAI_API_KEY[:5]}")
 
-# Initialize OpenAI client
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Model config
 MODEL = "gpt-4o"
 
 def generate_openai_message(prompt: str) -> str:

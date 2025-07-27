@@ -5,15 +5,35 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
-import datetime, logging
+import datetime, logging, asyncio
 
 from .database import get_db
 from .models import User, Goal, DailyLog
 from .schemas import UserCreate, UserResponse, GoalResponse
 from .utils.ai_utils import generate_openai_message
-from .utils import messaging_utils
+from .utils.email_utils import send_email
+from .utils import messaging_utils, email_utils
+
+
 
 app = FastAPI()
+
+
+def format_time_label(time: datetime.datetime) -> str:
+    return time.strftime('%I:%M %p').lstrip("0")
+
+def get_scheduled_times(start_time: datetime.time, end_time: datetime.time, trigger_time: datetime.time) -> dict:
+    base = datetime.datetime.combine(datetime.date.today(), start_time)
+    end = datetime.datetime.combine(datetime.date.today(), end_time)
+    trigger = datetime.datetime.combine(datetime.date.today(), trigger_time)
+    wind_down_time = end - datetime.timedelta(hours=1.5)
+    midday_push_time = base + (wind_down_time - base) / 2
+    return {
+        "morning": base,
+        "trigger": trigger,
+        "midday": midday_push_time,
+        "wind_down": wind_down_time
+    }
 
 @app.get("/")
 async def read_root():
@@ -129,87 +149,111 @@ async def simulate_daily_support(user_id: UUID, db: Annotated[AsyncSession, Depe
         messages = []
         send_sms_enabled = bool(user.phone_number)
 
-        # Countdown logic
         days_remaining_text = ""
         if user.goals[0].target_date:
             days_left = (user.goals[0].target_date - now.date()).days
             if days_left > 0:
                 days_remaining_text = f"\n\n⏳ {days_left} days until {goal_text}"
 
-        # Morning Message
-        prompt_morning = (
-            f"Write a short motivational message in the tone of '{user.tone}'. "
-            f"Avoid greetings or repeating their name. Their buddy is '{user.buddy_name}'. "
-            f"Their current goal is: '{goal_text}'. Keep it between 30 to 40 words."
-        )
-        text_morning = generate_openai_message(prompt_morning).strip()
-        messages.append({
-            "type": "morning",
-            "prompt": prompt_morning,
-            "content": f"=== RISE N SHINE 🌄 ===\n\n{text_morning}\n\n– {user.buddy_name} 📜🤝"
-        })
+        # Scheduled times
+        scheduled_times = get_scheduled_times(user.daily_start_time, user.daily_end_time, user.trigger_time)
 
-        # Trigger Message
-        prompt_trigger = (
-            f"After this: '{user.trigger_habit}', their day begins. Remind them why they started their goal: '{goal_text}'. "
-            f"Use the tone '{user.tone}'. Make it action-oriented, and sign off as '{user.buddy_name}'. "
-            f"Keep it between 30 to 40 words."
-        )
-        text_trigger = generate_openai_message(prompt_trigger).strip()
-        messages.append({
-            "type": "trigger",
-            "prompt": prompt_trigger,
-            "content": f"=== TRIGGER 🔔 ===\n\n{text_trigger}{days_remaining_text}\n\n– {user.buddy_name} 🔔"
-        })
-
-        # Motivational Push
-        prompt_motivational = (
-            f"Write a concise motivational push for a user working toward '{goal_text}'. "
-            f"Mantra: '{user.mantra or 'no mantra set'}'. Tone: '{user.tone}'. Sign as '{user.buddy_name}'. "
-            f"Avoid repeating their name. Keep it between 30 to 40 words."
-        )
-        text_motivational = generate_openai_message(prompt_motivational).strip()
-        messages.append({
-            "type": "motivational",
-            "prompt": prompt_motivational,
-            "content": f"=== MIDDAY PUSH 👽 ===\n\n{text_motivational}\n\n– {user.buddy_name} 💪"
-        })
-
-        # Wind-Down Reflection
-        prompt_wind_down = (
-            f"Write a reflective evening message using a '{user.tone}' tone. "
-            f"Ask user to rate day 1–10 and share a win. Goal: '{goal_text}'. Sign as '{user.buddy_name}'. "
-            f"Avoid repeating their name. Keep it between 30 to 40 words."
-        )
-        text_wind_down = generate_openai_message(prompt_wind_down).strip()
-        messages.append({
-            "type": "wind_down",
-            "prompt": prompt_wind_down,
-            "content": f"=== WINDDOWN 🌚 ===\n\n{text_wind_down}\n\n– {user.buddy_name} 🌙"
-        })
-
-        # Save messages to DB
+        prompts = {
+            "morning": (
+                f"Address the user by name: {user.full_name}. "
+                f"Write a short motivational message in the tone of '{user.tone}'. "
+                f"Their current goal is: '{goal_text}'. Avoid repeating their name in the body. "
+                f"Keep the message concise (30–40 words)."
+            ),
+            "trigger": (
+                f"After this habit: '{user.trigger_habit}', their day begins. "
+                f"Remind them why they started working toward: '{goal_text}'. "
+                f"Use the tone '{user.tone}' and make it action-oriented. "
+                f"Do not mention their name in the message body. Keep it 30–40 words."
+            ),
+            "midday": (
+                f"Write a calming and energizing midday message. "
+                f"The user’s mantra is: '{user.mantra or 'no mantra set'}'. "
+                f"Use the tone '{user.tone}'. "
+                f"Focus on presence, purpose, and choosing to make today count. "
+                f"Remind them life is a gift and they can still shape it. "
+                f"Keep it between 30 to 40 words and avoid repeating their name."
+            ),
+            "wind_down": (
+                f"Write a reflective evening message in the tone of '{user.tone}'. "
+                f"Ask the user to rate their day 1–10 and share one win. "
+                f"Their goal is: '{goal_text}'. Do not include their name in the message. "
+                f"Keep it between 30–40 words."
+            )
+        }
         saved_logs = []
-        for m in messages:
+        for i, (msg_type, prompt) in enumerate(prompts.items()):
+            ai_text = generate_openai_message(prompt).strip()
+            timestamp = format_time_label(scheduled_times[msg_type])
+
+            base_label = {
+                "morning": "=== RISE N SHINE 🌄 ===",
+                "trigger": "=== TRIGGER 🔔 ===",
+                "midday": "=== MIDDAY PUSH ⚡️ ===",
+                "wind_down": "=== WINDDOWN 🌚 ==="
+            }[msg_type]
+
+            emoji = {
+                "morning": "📜🤝",
+                "trigger": "🔔",
+                "midday": "⚡️",
+                "wind_down": "🌙"
+            }[msg_type]
+
+            msg_body = (
+                f"{base_label}\n\n{ai_text}"
+                f"{days_remaining_text if msg_type == 'trigger' else ''}"
+                f"\n\n🕒 Scheduled: {timestamp}\n\n– {user.buddy_name} {emoji}"
+            )
+
             sid = None
             sent = False
-            if send_sms_enabled:
+            channels_used = []
+
+            # SMS (if enabled)
+            if user.notification_preference in ["sms", "both"] and user.phone_number:
                 try:
-                    sid = messaging_utils.send_sms(user.phone_number, m["content"])
-                    sent = bool(sid)
+                    sid = messaging_utils.send_sms(user.phone_number, msg_body)
+                    sent = True
+                    channels_used.append("sms")
                 except Exception as e:
-                    logging.error(f"SMS failed for {m['type']}: {e}")
+                    logging.error(f"SMS failed for {msg_type}: {e}")
+
+            # Email (if enabled)
+            if user.notification_preference in ["email", "both"] and user.email:
+                try:
+                    email_utils.send_email(
+                        to_email=user.email,
+                        message_type=base_label,
+                        message_body=msg_body,
+                        buddy_name=user.buddy_name
+                    )
+                    sent = True
+                    channels_used.append("email")
+                except Exception as e:
+                    logging.error(f"Email failed for {msg_type}: {e}")
+
+
             log = DailyLog(
                 user_id=user.id,
                 date=now.date(),
-                message_type=m["type"],
-                message_content=m["content"],
-                ai_prompt_used=m["prompt"],
+                message_type=msg_type,
+                message_content=msg_body,
+                ai_prompt_used=prompt,
                 sent_at=now,
                 is_sent=sent
             )
             db.add(log)
             saved_logs.append(log)
+
+            if user.is_hackathon_demo and i < len(prompts) - 1:
+                print(f"\n✅ Sent '{msg_type}' message... waiting 15 seconds before next...\n")
+                await asyncio.sleep(15)
 
         await db.commit()
         for entry in saved_logs:
@@ -228,3 +272,36 @@ async def simulate_daily_support(user_id: UUID, db: Annotated[AsyncSession, Depe
         await db.rollback()
         logging.error(f"Unhandled error in simulate_daily_support: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Simulation failed: {e}")
+
+
+app.post("/send-test-email/{user_id}")
+async def send_test_email_to_user(user_id: UUID, db: Annotated[AsyncSession, Depends(get_db)]):
+    try:
+        # Fetch user
+        result = await db.execute(select(User).where(User.id == user_id))
+        user = result.scalars().first()
+
+        if not user or not user.email:
+            raise HTTPException(status_code=404, detail="User not found or email not set")
+
+        # Format a basic test message
+        base_label = "=== TEST EMAIL 📧 ==="
+        msg_body = (
+            f"{base_label}\n\n"
+            "This is a test email sent from GoalC to verify email delivery setup."
+            f"\n\n🕒 Sent at: {datetime.datetime.now().strftime('%Y-%m-%d %I:%M %p')}"
+            f"\n\n– {user.buddy_name or 'Bizzy'}"
+        )
+
+        send_email(
+            to_email=user.email,
+            message_type=base_label,
+            message_body=msg_body,  
+            buddy_name=user.buddy_name
+        )
+
+        return {"status": "sent", "to": user.email}
+
+    except Exception as e:
+        logging.error(f"Email test failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to send test email: {e}")
