@@ -1,21 +1,21 @@
-# schemas.py
+# app/schemas.py (Ensure this content is in your file!)
 from pydantic import BaseModel, EmailStr, Field
 from datetime import time, date, datetime
 from typing import Optional, Literal
-import uuid
+import uuid # Keep this for UUID fields in other schemas
 
-#Pydantic Model for Goal creation 
+# Pydantic Model for Goal creation
 class GoalCreate(BaseModel):
     goal_text: str = Field(..., min_length=1, max_length=1000)
     goal_duration_type: Literal['fixed', 'estimate', 'ongoing']
-    goal_duration_value: Optional[str] = None # YYYY-MM-DD for fixed, or days '45' for estimate
+    goal_duration_value: Optional[str] = None
 
     class Config:
-        from_attributes = True # Allows Pydantic to read ORM models directly
+        from_attributes = True 
 
-#Pydantic Model for User creation 
+# Pydantic Model for User creation
 class UserCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=255)
+    full_name: str = Field(..., min_length=1, max_length=255) 
     email: EmailStr
     phone_number: Optional[str] = Field(None, max_length=20)
     timezone: str = Field(..., max_length=50)
@@ -38,43 +38,50 @@ class UserCreate(BaseModel):
     monday_hour_1_day_of_week: Optional[Literal['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']] = None
     monday_hour_1_time: Optional[time] = None
 
-  
-    goal: GoalCreate 
+    goal: GoalCreate
 
     class Config:
         from_attributes = True
 
 # Pydantic Model for Goal response
-class GoalResponse(GoalCreate):
-    id: uuid.UUID
+class GoalResponse(BaseModel): 
+    id: int 
     user_id: uuid.UUID
-    created_at: datetime 
-    updated_at: datetime 
+    description: str 
+    created_at: datetime
+    target_date: Optional[date] 
+    is_completed: bool 
+    progress: Optional[str] 
+
     class Config:
         from_attributes = True
 
 # Pydantic Model for user response
-
 class UserResponse(UserCreate):
     id: uuid.UUID
-    created_at: datetime 
-    updated_at: datetime 
+    created_at: datetime
+    updated_at: datetime
 
-   
     goal: GoalResponse 
 
     class Config:
         from_attributes = True
 
 # Pydantic Model for DailyLog (for future use, e.g., viewing logs)
-class DailyLog(BaseModel):
-    id: uuid.UUID
+class DailyLogResponse(BaseModel): 
+    id: int 
     user_id: uuid.UUID
-    log_date: date 
+    date: date 
+    message_type: str
+    message_content: str
+    ai_prompt_used: Optional[str] = None 
+    sent_at: Optional[datetime] = None 
+    is_sent: Optional[bool] = None 
     reflection_text: Optional[str] = None
     rating_score: Optional[int] = Field(None, ge=1, le=10)
-    log_type: Literal['daily_reflection', 'monday_hour_1']
-    created_at: datetime 
+    # log_type: Literal['daily_reflection', 'monday_hour_1'] 
+                                                            
+                                                            
 
     class Config:
         from_attributes = True
