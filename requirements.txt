@@ -69,7 +69,7 @@ PyJWT==2.10.1
 pyparsing==3.2.3
 python-dotenv==1.1.1
 requests==2.32.4
-resend==2.11.0
+resend @ git+https://github.com/resendlabs/resend-python.git@15fbd0f6670d45b2b3fcda68146062a658c2d911
 rsa==4.9.1
 setuptools==80.9.0
 six==1.17.0
