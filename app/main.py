@@ -412,6 +412,3 @@ async def send_test_email_to_user(user_id: UUID, db: Annotated[AsyncSession, Dep
         raise HTTPException(status_code=500, detail=f"Failed to send test email: {e}")
     
 
-@app.options("/signup")
-async def preflight_signup():
-    return Response(status_code=204)
