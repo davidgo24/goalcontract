@@ -1,0 +1,6 @@
+app/
+venv/
+alembic/
+requirements.txt
+alembic.ini
+main.py
