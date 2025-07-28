@@ -8,6 +8,8 @@ from sqlalchemy.orm import selectinload
 import datetime, logging, asyncio
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
 
 from .database import get_db
 from .models import User, Goal, DailyLog
@@ -407,3 +409,8 @@ async def send_test_email_to_user(user_id: UUID, db: Annotated[AsyncSession, Dep
     except Exception as e:
         logging.error(f"Email test failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to send test email: {e}")
+    
+
+@app.options("/signup")
+async def options_signup():
+    return JSONResponse(status_code=200)
