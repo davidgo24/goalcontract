@@ -978,7 +978,7 @@
 
                     try {
                         
-                        const signupResponse = await fetch('http://127.0.0.1:8000/signup', {
+                        const signupResponse = await fetch('https://goalcontract-production.up.railway.app/signup', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -997,7 +997,7 @@
                         console.log('System blueprint submitted successfully. User ID:', userId);
 
                         
-                        const simulateResponse = await fetch(`http://127.0.0.1:8000/simulate-day/${userId}`, {
+                        const simulateResponse = await fetch(`https://goalcontract-production.up.railway.app/simulate-day/${userId}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({})
