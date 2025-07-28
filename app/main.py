@@ -27,7 +27,7 @@ app.add_middleware(
     allow_origins=[
         "https://goalcontract.vercel.app",
         "https://goalcontract.onrender.com",
-        "http://localhost:5173"
+        "https://goalcontract-git-main-davids-projects-150da09a.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
