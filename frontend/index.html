@@ -3,15 +3,1094 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Tiempo</title>
-    <script src = "https://cdm.tailwindcss.com"></script>
+    <title>GoalContract: Engineer Your System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Karla:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #DAA520; 
+            --primary-hover: #B8860B; 
+            --accent-color: #FFD700; 
+
+            
+            --bg-color: #F8FAFC; 
+            --success-bg-color: #FFF8E7; 
+            --card-bg: #ffffff;
+            --text-color: #334155; 
+            --light-text: #64748B; 
+            --border-color: #E2E8F0;
+            --input-bg: #F8FAFC; 
+            --input-border: #CBD5E1; 
+
+            
+            --msg-card-bg: #1E293B; 
+            --msg-card-text: #E2E8F0; 
+            --msg-card-border: #334155; 
+
+            
+            --primary-color-focus-ring: rgba(218, 165, 32, 0.25); 
+        }
+
+        body {
+            font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            background-color: var(--bg-color); 
+            line-height: 1.7;
+            color: var(--text-color);
+            scroll-behavior: smooth;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.5s ease-in-out; 
+        }
+        
+        body.success-state {
+            background-color: var(--success-bg-color);
+        }
+
+        ::selection { background-color: #c9f3fd; }
+        [x-cloak] { display: none; }
+
+        
+        .header {
+            background-color: white;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .header .logo {
+            font-family: 'Karla', sans-serif;
+            font-weight: 800;
+            font-size: 2.25rem; 
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .header .logo svg {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .main-content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            padding: 2rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        
+        .left-column.hidden-on-success {
+            display: none;
+        }
+
+        
+        body.success-state .main-content-grid {
+            grid-template-columns: 1fr;
+            max-width: 800px;
+            padding: 4rem 1rem; 
+        }
+
+
+        @media (min-width: 1024px) {
+            .main-content-grid {
+                grid-template-columns: 2fr 3fr;
+                padding: 3rem 2rem;
+            }
+            
+            body.success-state .main-content-grid {
+                grid-template-columns: 1fr; 
+            }
+        }
+
+        .left-column, .right-column {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem;
+        }
+
+        .left-column {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .right-column .contract-preview {
+            line-height: 1.8;
+            font-size: 1.05rem;
+            color: var(--text-color);
+            white-space: pre-wrap;
+        }
+        .right-column .contract-preview strong {
+            font-weight: 600;
+            color: var(--primary-hover);
+        }
+
+        h2, h3, h4 {
+            font-family: 'Karla', sans-serif;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+        h2 { font-size: 2rem; }
+        h3 { font-size: 1.5rem; }
+        h4 { font-size: 1.25rem; }
+
+        label {
+            font-weight: 600;
+            color: var(--light-text);
+            margin-bottom: 0.5rem;
+            display: block;
+            font-size: 0.9rem;
+        }
+        input[type="text"], input[type="email"], input[type="tel"],
+        input[type="date"], input[type="time"], textarea, select {
+            border: 1px solid var(--input-border);
+            padding: 0.7rem 0.9rem;
+            border-radius: 0.5rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background-color: var(--input-bg);
+            width: 100%;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-color-focus-ring);
+            outline: none;
+            background-color: var(--card-bg);
+        }
+
+        button {
+            border-radius: 0.5rem;
+            font-weight: 700;
+            padding: 0.7rem 1.4rem;
+            transition: background-color 0.2s, transform 0.1s ease-out, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        button.primary-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        button.primary-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        button.secondary-btn {
+            background-color: var(--border-color);
+            color: var(--light-text);
+        }
+        button.secondary-btn:hover {
+            background-color: #CBD5E1;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .section-block {
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+        .section-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .section-header h3 {
+            margin-bottom: 0;
+            font-size: 1.3rem;
+        }
+        .section-header .checkmark {
+            display: inline-block;
+            width: 1.2em; height: 1.2em;
+            border-radius: 50%;
+            background-color: #10B981;
+            color: white;
+            text-align: center;
+            line-height: 1.2em;
+            font-size: 0.8em;
+            font-weight: bold;
+            transform: scale(0); opacity: 0;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        .section-header .checkmark.show {
+            transform: scale(1); opacity: 1;
+        }
+        .section-header .arrow {
+            transition: transform 0.3s ease-out;
+        }
+        .section-header .arrow.rotate {
+            transform: rotate(90deg);
+        }
+
+        .error-message {
+            color: #EF4444;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Alpine.js x-transition classes */
+        .fade-in-slide-up-enter { opacity: 0; transform: translateY(10px); }
+        .fade-in-slide-up-enter-active { transition: opacity 0.5s ease-out, transform 0.5s ease-out; }
+        .fade-in-slide-up-enter-to { opacity: 1; transform: translateY(0); }
+
+        .fade-in-enter { opacity: 0; }
+        .fade-in-enter-active { transition: opacity 0.5s ease-out; }
+        .fade-in-enter-to { opacity: 1; }
+
+        /* Confirmation / Success styling */
+        .confirmation-card {
+            background-color: var(--msg-card-bg);
+            color: var(--msg-card-text);
+            padding: 2.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 700px; 
+            margin: 0 auto; 
+        }
+        
+        body.success-state .header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        body.success-state .header .logo {
+            color: var(--text-color); 
+        }
+
+        .confirmation-card h2 {
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+        }
+        .confirmation-card p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            color: #CBD5E1;
+        }
+        .confirmation-card a {
+            color: #60A5FA;
+            text-decoration: underline;
+        }
+        .confirmation-card .button-group {
+            margin-top: 2rem;
+        }
+        
+        
+        .confirmation-card .bg-gray-700 pre {
+            white-space: pre-wrap; 
+            overflow-wrap: break-word; 
+        }
+
+
+        
+        .loading-message {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .loading-message .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body class ="bg-gray100 text-gray-900 flex items-center justify-center min-h-screen">
-    <div class = "bg-white p-8 rounded-lg shadow-md max-w-md w-full" x-data="{ message: 'Alpine.js testing'}">
-        <h1 class="text-3xl font-bold text-center mb-4">Welcome to your Sistema!</h1>
-        <p class="text center text-lg text-blue-600" x-text="message"></p>
-        <p class="text-center mt-2 text-gray-600">Tailwind styling</p>
-    </div>    
+<body class="bg-gray-50 text-gray-700" :class="{ 'success-state': currentStep === 10 }">
+    <header class="header">
+        <div class="logo">
+            <svg width="48" height="48" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M128 0C198.79 0 256 57.21 256 128V256H128C57.21 256 0 198.79 0 128C0 57.21 57.21 0 128 0ZM128 128V256H256C256 198.79 198.79 128 128 128Z" fill="#DAA520"/>
+                <path d="M128 128C198.79 128 256 185.21 256 256H128V128ZM128 128C57.21 128 0 70.79 0 0H128V128Z" fill="#B8860B"/>
+            </svg>
+            <span>GoalContract</span>
+        </div>
+    </header>
+
+    <main class="main-content-grid" x-data="contractFlow()" x-cloak>
+        <section class="left-column" :class="{ 'hidden-on-success': currentStep === 10 }">
+            <h2 class="text-center mb-6" x-show="currentStep === 1">Build Your System</h2>
+            <h2 class="text-center mb-6" x-show="currentStep === 2">System Blueprint</h2>
+
+            <div x-show="currentStep === 1" x-transition:enter="fade-in-enter">
+                <p class="text-lg text-gray-600 mb-8">Craft a system that turns goals into inevitabilities.</p>
+
+                <div class="mb-8 p-6 bg-gray-100 rounded-lg shadow-inner text-center">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Our Inspiration: The Mamba Mentality</h3>
+                    <p class="text-gray-700 mb-4">
+                        This project is inspired by Kobe Bryant's non-negotiable commitment to excellence. As Kobe said, "The deal was already made. I signed that contract with myself. I'm doing it!"
+                    </p>
+                    <div class="relative" style="padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;">
+                        <iframe width="443" height="788" src="https://www.youtube.com/embed/HguhuHA-dFw" title="KOBE BRYANT - Self negotiation |MAMBA MENTALITY|" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen class="absolute top-0 left-0 w-full h-full rounded-md"></iframe>
+                    </div>
+                </div>
+                <button @click="currentStep = 2; activateSection(1);" class="primary-btn w-full text-lg">
+                    Commit Your Goal in Writing 📝
+                </button>
+            </div>
+
+            <div x-show="currentStep === 2">
+
+                <div class="section-block" id="section-1">
+                    <div class="section-header" @click="toggleSection(1)">
+                        <h3>1. System Foundation</h3>
+                        <span class="checkmark" :class="{ 'show': isSectionComplete(1) }">✓</span>
+                        <svg class="arrow w-5 h-5 text-gray-400" :class="{ 'rotate': activeSection === 1 }" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div x-show="activeSection === 1" x-transition:enter="fade-in-slide-up-enter">
+                        <div class="mb-4">
+                            <label for="full_name">Your Name</label>
+                            <input type="text" id="full_name" x-model="formData.full_name" placeholder="Full Name">
+                        </div>
+                        <div class="mb-4">
+                            <label for="timezone">Timezone</label>
+                            <select id="timezone" x-model="formData.timezone">
+                                <option value="">Select timezone</option>
+                                <option value="America/Los_Angeles">America/Los_Angeles (PDT)</option>
+                                <option value="America/New_York">America/New_York (EDT)</option>
+                                <option value="Europe/London">Europe/London (BST)</option>
+                                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                                <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                                <option value="UTC">UTC</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="notification_preference">System Communication</label>
+                            <select id="notification_preference" x-model="formData.notification_preference">
+                                <option value="">Select method</option>
+                                <option value="sms">SMS Only (Standard carrier rates may apply) </option>
+                                <option value="email">Email Only </option>
+                                <option value="both">Both</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label for="email_input">Email</label>
+                            <input type="email" id="email_input" x-model="formData.email" @input="validateEmail">
+                            <p x-show="!isValidEmail && formData.email.length > 0" class="error-message">Valid email needed. ⚠️</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="email_confirm_input">Confirm Email</label>
+                            <p class="text-sm text-gray-500 mt-1 mb-2">
+                                *Don't forget to check spam for emails sent after you submit later*
+                            </p>
+                            <input type="email" id="email_confirm_input" x-model="formData.email_confirm" @input="validateEmail">
+                            <p x-show="formData.email !== formData.email_confirm && formData.email_confirm.length > 0" class="error-message">Emails don't match. 🛠️</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="phone_input">Phone - U.S. 10 digit Only 😭 (Optional)</label>
+                            <input type="tel" id="phone_input" x-model="formData.phone_number" @input="validatePhoneNumber">
+                            <p x-show="!isValidPhoneNumber && formData.phone_number.length > 0" class="error-message">10-digit number. 📱</p>
+                        </div>
+                        <div class="mb-4">
+                            <label for="phone_confirm_input">Confirm Phone</label>
+                            <input type="tel" id="phone_confirm_input" x-model="formData.phone_number_confirm" @input="validatePhoneNumber">
+                            <p x-show="formData.phone_number !== formData.phone_number_confirm && formData.phone_number_confirm.length > 0" class="error-message">Numbers don't match. 🛠️</p>
+                        </div>
+                        <div class="flex justify-end mt-4">
+                            <button type="button" @click="goToNextSection(1)" class="primary-btn" :disabled="!isSectionValid(1)">Next Module ➡️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block" id="section-2">
+                    <div class="section-header" @click="toggleSection(2)">
+                        <h3>2. North Star Outcome</h3>
+                        <span class="checkmark" :class="{ 'show': isSectionComplete(2) }">✓</span>
+                        <svg class="arrow w-5 h-5 text-gray-400" :class="{ 'rotate': activeSection === 2 }" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div x-show="activeSection === 2" x-transition:enter="fade-in-slide-up-enter">
+                        <div class="mb-4">
+                            <label for="goal_text">Aspirational Outcome</label>
+                            <input type="text" id="goal_text" x-model="formData.goal.goal_text" placeholder="e.g., Run the 2025 Honolulu Marathon in 3hrs.">
+                        </div>
+                        <div class="mb-4">
+                            <label for="goal_duration_type">Timeframe Type</label>
+                            <select id="goal_duration_type" x-model="formData.goal.goal_duration_type">
+                                <option value="">Select type</option>
+                                <option value="fixed">Fixed Deadline</option>
+                                <option value="ongoing">Ongoing Output</option>
+                            </select>
+                        </div>
+                        <div class="mb-4" x-show="formData.goal.goal_duration_type === 'fixed'">
+                            <label for="goal_date">Deadline Date</label>
+                            <input type="date" id="goal_date" x-model="formData.goal.goal_duration_value">
+                        </div>
+                        <div class="mb-4" x-show="formData.goal.goal_duration_type === 'estimate'">
+                            <label for="goal_estimate">Estimated Duration</label>
+                            <input type="text" id="goal_estimate" x-model="formData.goal.goal_duration_value" placeholder="e.g., 3 months">
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <button type="button" @click="activateSection(2)" class="secondary-btn">⬅️ Back</button>
+                            <button type="button" @click="goToNextSection(2)" class="primary-btn" :disabled="!isSectionValid(2)">Next Module ➡️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block" id="section-3">
+                    <div class="section-header" @click="toggleSection(3)">
+                        <h3>3. Daily Architecture</h3>
+                        <span class="checkmark" :class="{ 'show': isSectionComplete(3) }">✓</span>
+                        <svg class="arrow w-5 h-5 text-gray-400" :class="{ 'rotate': activeSection === 3 }" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div x-show="activeSection === 3" x-transition:enter="fade-in-slide-up-enter">
+                        <div class="mb-4">
+                            <label for="start_time">What time would you like to recieve your morning text?</label>
+                            <input type="time" id="start_time" x-model="formData.daily_start_time">
+                        </div>
+                        <div class="mb-4">
+                            <label for="end_time">What time does your day typically end? We will send you a wind down text an hour and a half before this.</label>
+                            <input type="time" id="end_time" x-model="formData.daily_end_time">
+                        </div>
+                        <div class="mb-4">
+                            <label for="trigger_pref">What time should we remind you its time to start working towards your goal?</label>
+                            <select id="trigger_pref" x-model="formData.trigger_preference" @change="clearTriggerFields">
+                                <option value="">Select type</option>
+                                <option value="time">A Specific Time? i.e. 9:10AM</option>
+                                <option value="habit">After a Habit? i.e. After I walk my dog.</option>
+                                <option value="both">Fill in time and habit? i.e. After I walk my dog it should be 9:10AM. This will be my trigger to train for my marathon.</option>
+                                <option value="none">None (send it at the same time of the morning text.)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4" x-show="formData.trigger_preference === 'time' || formData.trigger_preference === 'both'">
+                            <label for="trigger_time">Trigger Time</label>
+                            <input type="time" id="trigger_time" x-model="formData.trigger_time">
+                        </div>
+                        <div class="mb-4" x-show="formData.trigger_preference === 'habit' || formData.trigger_preference === 'both'">
+                            <label for="trigger_habit">Trigger Habit</labeL>
+                            <input type="text" id="trigger_habit" x-model="formData.trigger_habit" placeholder="e.g., first coffee">
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <button type="button" @click="activateSection(3)" class="secondary-btn">⬅️ Back</button>
+                            <button type="button" @click="goToNextSection(3)" class="primary-btn" :disabled="!isSectionValid(3)">Next Module ➡️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block" id="section-4">
+                    <div class="section-header" @click="toggleSection(4)">
+                        <h3>4. Feedback & Principles</h3>
+                        <span class="checkmark" :class="{ 'show': isSectionComplete(4) }">✓</span>
+                        <svg class="arrow w-5 h-5 text-gray-400" :class="{ 'rotate': activeSection === 4 }" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div x-show="activeSection === 4" x-transition:enter="fade-in-slide-up-enter">
+                        <div class="mb-4">
+                            <label for="buddy_name">Feedback Coach Name</label>
+                            <input type="text" id="buddy_name" x-model="formData.buddy_name" placeholder="i.e. Kobe, Goggins, Groot. Something fun!">
+                        </div>
+                        <div class="mb-4">
+                            <label for="tone">Feedback Message Tone</label>
+                            <input type="text" id="tone" x-model="formData.tone" placeholder="i.e. Mamba Mentality, Calm and Relaxed, Uplifting...">
+                        </div>
+                        <div class="mb-4">
+                            <label for="mantra">Core Operating Principle or Quote</label>
+                            <textarea id="mantra" x-model="formData.mantra" placeholder="e.g., I signed the contract with myself. I'm doing it." rows="2"></textarea>
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <button type="button" @click="activateSection(3)" class="secondary-btn">⬅️ Back</button>
+                            <button type="button" @click="goToNextSection(4)" class="primary-btn" :disabled="!isSectionValid(4)">Next Module ➡️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block" id="section-5">
+                    <div class="section-header" @click="toggleSection(5)">
+                        <h3>5. Weekly Check-In aka (Monday Hour 1)</h3>
+                        <span class="checkmark" :class="{ 'show': isSectionComplete(5) }">✓</span>
+                        <svg class="arrow w-5 h-5 text-gray-400" :class="{ 'rotate': activeSection === 5 }" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div x-show="activeSection === 5" x-transition:enter="fade-in-slide-up-enter">
+                        <div class="mb-4">
+                            <input type="checkbox" id="weekly_opt_enabled" x-model="formData.monday_hour_1_enabled" class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2">
+                            <label for="weekly_opt_enabled" class="inline-block align-middle font-normal text-gray-700">Schedule 1 hour of protected time each week to review progress, optimize your system, and prepare for your week ahead. You pick the day and time! (Recommended)</label>
+                        </div>
+                        <div x-show="formData.monday_hour_1_enabled" class="mb-4">
+                            <label for="review_day">Review Day</label>
+                            <select id="review_day" x-model="formData.monday_hour_1_day_of_week">
+                                <option value="">Select a day</option>
+                                <option value="Sunday">Sunday</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                        </div>
+                        <div x-show="formData.monday_hour_1_enabled" class="mb-4">
+                            <label for="review_time">Review Time</label>
+                            <input type="time" id="review_time" x-model="formData.monday_hour_1_time">
+                        </div>
+                        <div class="flex justify-between mt-4">
+                            <button type="button" @click="activateSection(4)" class="secondary-btn">⬅️ Back</button>
+                            <button type="button" @click="goToNextSection(5)" class="primary-btn" :disabled="!isSectionValid(5)">Next Module ➡️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block" id="section-6">
+                    <div class="section-header" @click="toggleSection(6)">
+                        <h3>6. Activate System</h3>
+                        <span class="checkmark" :class="{ 'show': isSectionComplete(6) }">✓</span>
+                        <svg class="arrow w-5 h-5 text-gray-400" :class="{ 'rotate': activeSection === 6 }" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <div x-show="activeSection === 6" x-transition:enter="fade-in-slide-up-enter">
+                        <p class="text-sm text-gray-600 mb-4">By signing, you commit to consistent execution and optimization of this system for sustained achievement.</p>
+                        <div class="mb-4">
+                            <label for="signature_input">Sign to Activate</label>
+                            <input type="text" id="signature_input" x-model="formData.signature" :placeholder="formData.full_name || 'Type your full name'">
+                        </div>
+                        <p class="text-xs text-gray-500">Date: <span x-text="new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })"></span></p>
+
+                        <div class="flex justify-between mt-6">
+                            <button type="button" @click="activateSection(5)" class="secondary-btn">⬅️ Back</button>
+                            <button type="button" @click="submitContract()" :disabled="!isFormComplete() || submitting" class="primary-btn">
+                                <span x-show="!submitting">Activate System! ⚡</span>
+                                <span x-show="submitting">Initializing...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="right-column" :class="{ 'w-full': currentStep === 10 }">
+            <h2 class="text-center mb-6" x-show="currentStep === 1 || currentStep === 2 || currentStep === 9 || currentStep === 10">Live System Blueprint</h2>
+
+            <div x-show="currentStep === 9" x-transition:enter="fade-in-enter" class="loading-message">
+                <div class="spinner"></div>
+                <p>Sending messages and activating your system...</p>
+            </div>
+
+            <div class="contract-preview p-4 bg-gray-50 border border-gray-200 rounded-md"
+                 x-html="renderContract()"
+                 x-show="currentStep === 2"
+                 x-transition:enter="fade-in-enter">
+            </div>
+
+            <div x-show="currentStep === 10" x-transition:enter="fade-in-enter" class="confirmation-card mt-8">
+                <h2 class="text-gold-400 mb-4">System Activated! ✨</h2>
+                <p>Your personalized operating system is now online. A blueprint copy and initial prompts are being sent.</p>
+
+                <div class="space-y-4 my-6 text-left text-gray-300">
+                    <template x-for="(message, index) in demoMessages" :key="index">
+                        <div class="bg-gray-700 p-4 rounded-md shadow">
+                            <p class="text-yellow-300 text-sm font-semibold mb-2" x-text="message.time"></p>
+                            <pre class="font-mono text-sm text-gray-300" x-text="message.content"></pre>
+                            <p x-show="message.note" class="text-xs text-gray-400 mt-1" x-text="message.note"></p>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="button-group">
+                    <button @click="restartFlow()" class="secondary-btn">🔄 Design New System</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('contractFlow', () => ({
+                currentStep: 1, 
+                activeSection: 0, 
+                totalContractSections: 6,
+                submitting: false,
+                isValidEmail: true, emailsMatch: true,
+                isValidPhoneNumber: true, phoneNumbersMatch: true,
+
+                
+                sectionsCompleted: {
+                    1: false, 2: false, 3: false, 4: false, 5: false, 6: false
+                },
+
+                formData: {
+                    full_name: '', email: '', email_confirm: '', phone_number: '', phone_number_confirm: '',
+                    timezone: '', notification_preference: '',
+                    daily_start_time: '', 
+                    daily_end_time: '', 
+                    trigger_preference: '', trigger_time: '', trigger_habit: '', 
+                    tone: '', 
+                    buddy_name: 'Groot', 
+                    mantra: '', 
+                    monday_hour_1_enabled: false, monday_hour_1_day_of_week: '', monday_hour_1_time: '',
+                    goal: { goal_text: '', goal_duration_type: '', goal_duration_value: '' },
+                    is_hackathon_demo: true, signature: '',
+                    currentDay: 1, totalGoalDays: 90
+                },
+                demoMessages: [], 
+
+                init() {
+                    this.activeSection = 1; 
+
+                    this.$watch('formData.email', () => { this.validateEmail(); });
+                    this.$watch('formData.email_confirm', () => { this.validateEmail(); });
+                    this.$watch('formData.phone_number', () => { this.validatePhoneNumber(); });
+                    this.$watch('formData.phone_number_confirm', () => { this.validatePhoneNumber(); });
+                    this.$watch('formData.monday_hour_1_enabled', (value) => {
+                        if (!value) {
+                            this.formData.monday_hour_1_day_of_week = null;
+                            this.formData.monday_hour_1_time = null;
+                        } else {
+                             if (!this.formData.monday_hour_1_day_of_week) this.formData.monday_hour_1_day_of_week = 'Sunday';
+                             if (!this.formData.monday_hour_1_time) this.formData.monday_hour_1_time = '18:00';
+                        }
+                    });
+                    this.$watch('formData.goal.goal_duration_type', (value) => {
+                        if (value === 'ongoing') {
+                            this.formData.goal.goal_duration_value = null;
+                        }
+                    });
+                },
+
+                validateEmail() {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    this.isValidEmail = emailRegex.test(this.formData.email) || this.formData.email === '';
+                    this.emailsMatch = this.formData.email === this.formData.email_confirm;
+                    if (this.formData.email_confirm.length === 0 && this.formData.email.length === 0) {
+                        this.emailsMatch = true;
+                    }
+                },
+
+                validatePhoneNumber() {
+                    const phone = this.formData.phone_number.replace(/\D/g, '');
+                    const phoneConfirm = this.formData.phone_number_confirm.replace(/\D/g, '');
+
+                    this.formData.phone_number = phone;
+                    this.formData.phone_number_confirm = phoneConfirm;
+
+                    this.isValidPhoneNumber = (phone.length === 0 || phone.length === 10);
+                    this.phoneNumbersMatch = (phone === phoneConfirm);
+                    if (phoneConfirm.length === 0 && phone.length === 0) {
+                        this.phoneNumbersMatch = true;
+                    }
+                },
+
+                clearTriggerFields() {
+                    const preference = this.formData.trigger_preference;
+                    if (preference === 'time') {
+                        this.formData.trigger_habit = '';
+                    } else if (preference === 'habit') {
+                        this.formData.trigger_time = '';
+                    } else if (preference === 'none') {
+                        this.formData.trigger_time = '';
+                        this.formData.trigger_habit = '';
+                    }
+                },
+
+                activateSection(sectionNumber) {
+                    if (this.currentStep === 2) {
+                        this.activeSection = sectionNumber;
+                        this.$nextTick(() => {
+                            const sectionElement = document.getElementById(`section-${sectionNumber}`);
+                            if (sectionElement) {
+                                const offset = 20; 
+                                const elementRect = sectionElement.getBoundingClientRect();
+                                const currentScrollY = window.scrollY || window.pageYOffset;
+                                const targetScrollY = currentScrollY + elementRect.top - offset;
+
+                                window.scrollTo({
+                                    top: targetScrollY,
+                                    behavior: "smooth"
+                                });
+                                const firstInput = sectionElement.querySelector('input:not([type="hidden"]):not([readonly]):not([type="checkbox"]), select, textarea');
+                                if (firstInput) {
+                                    firstInput.focus();
+                                }
+                            }
+                        });
+                    }
+                },
+
+                toggleSection(sectionNumber) {
+                    if (this.activeSection === sectionNumber) {
+                        this.activeSection = 0; 
+                    } else if (this.isSectionComplete(sectionNumber)) {
+                        this.activateSection(sectionNumber); 
+                    } else if (sectionNumber < this.activeSection) {
+                        this.activateSection(sectionNumber); 
+                    } else {
+                        
+                        if (this.activeSection === 0 || this.isSectionComplete(this.activeSection)) {
+                            this.activateSection(sectionNumber);
+                        } else {
+                            
+                            alert('Please complete the current module before proceeding to a new one.');
+                        }
+                    }
+                },
+
+                goToNextSection(currentSectionNumber) {
+                    if (!this.isSectionValid(currentSectionNumber)) {
+                        alert("Please complete this module to proceed.");
+                        return;
+                    }
+                    
+                    this.sectionsCompleted[currentSectionNumber] = true;
+
+                    if (currentSectionNumber < this.totalContractSections) {
+                        this.activateSection(currentSectionNumber + 1);
+                    } else {
+                        
+                        this.activateSection(this.totalContractSections);
+                    }
+                },
+
+                isSectionValid(sectionNumber) {
+                    const data = this.formData;
+                    switch(sectionNumber) {
+                        case 1:
+                            if (!data.full_name || !data.timezone || !data.notification_preference) return false;
+                            if (data.notification_preference === 'email' || data.notification_preference === 'both') {
+                                if (!data.email || !data.email_confirm || !this.isValidEmail || !this.emailsMatch) return false;
+                            } else if (data.email || data.email_confirm) { 
+                                if (!this.isValidEmail || !this.emailsMatch) return false;
+                            }
+                            if (data.notification_preference === 'sms' || data.notification_preference === 'both') {
+                                if (!data.phone_number || !data.phone_number_confirm || !this.isValidPhoneNumber || !this.phoneNumbersMatch || data.phone_number.length !== 10) return false;
+                            } else if (data.phone_number || data.phone_number_confirm) { 
+                                if (!this.isValidPhoneNumber || !this.phoneNumbersMatch || (data.phone_number.length > 0 && data.phone_number.length !== 10)) return false;
+                            }
+                            return true;
+                        case 2:
+                            if (!data.goal.goal_text || !data.goal.goal_duration_type) return false;
+                            if ((data.goal.goal_duration_type === 'fixed' || data.goal.goal_duration_type === 'estimate') && !data.goal.goal_duration_value) return false;
+                            return true;
+                        case 3:
+                            if (!data.daily_start_time || !data.daily_end_time) return false;
+                            if (data.trigger_preference === 'time' && !data.trigger_time) return false;
+                            if (data.trigger_preference === 'habit' && !data.trigger_habit) return false;
+                            if (data.trigger_preference === 'both' && (!data.trigger_time || !data.trigger_habit)) return false;
+                            return true;
+                        case 4:
+                            return data.buddy_name && data.tone && data.mantra;
+                        case 5:
+                            if (data.monday_hour_1_enabled) {
+                                return data.monday_hour_1_day_of_week && data.monday_hour_1_time;
+                            }
+                            return true;
+                        case 6:
+                            return !!data.signature; 
+                        default:
+                            return false;
+                    }
+                },
+
+                
+                isSectionComplete(sectionNumber) {
+                    return this.isSectionValid(sectionNumber) && this.sectionsCompleted[sectionNumber];
+                },
+
+                isFormComplete() {
+                    
+                    
+                    for (let i = 1; i < this.totalContractSections; i++) {
+                        if (!this.isSectionComplete(i)) {
+                            return false;
+                        }
+                    }
+                    
+                    
+                    return this.isSectionValid(this.totalContractSections);
+                },
+
+                formatTime(timeString) {
+                    if (!timeString) return '';
+                    try {
+                        const [hours, minutes] = timeString.split(':');
+                        const date = new Date();
+                        date.setHours(parseInt(hours));
+                        date.setMinutes(parseInt(minutes));
+                        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    } catch (e) {
+                        return timeString;
+                    }
+                },
+
+                formatDate(dateString) {
+                    if (!dateString) return '';
+                    try {
+                        const [year, month, day] = dateString.split('-').map(Number);
+                        
+                        const date = new Date(year, month - 1, day);
+                        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    } catch (e) {
+                        return dateString;
+                    }
+                },
+
+                renderContract() {
+                    const data = this.formData;
+                    let contractHtml = `<h2 class="text-xl font-semibold mb-4">📝 My Personal System Contract</h2>`;
+
+                    
+                    if (data.full_name) {
+                        contractHtml += `I, <strong>${data.full_name}</strong>, commit to building a system that helps me grow, stay consistent, and move toward my goals with intention.`;
+                    } else {
+                        contractHtml += `I, ______________________, commit to building a system that helps me grow, stay consistent, and move toward my goals with intention.`;
+                    }
+
+                    
+                    if (data.timezone) {
+                        contractHtml += ` This system runs on <strong>${data.timezone}</strong> time.`;
+                    }
+
+                    
+                    if (data.notification_preference) {
+                        contractHtml += `<br><br>Preferred check-ins and nudges will be sent via <strong>${data.notification_preference}</strong>.`;
+                    }
+                    if (data.email && this.isValidEmail && this.emailsMatch) {
+                        contractHtml += ` Email: <strong>${data.email}</strong>.`;
+                    }
+                    if (data.phone_number && this.isValidPhoneNumber && this.phoneNumbersMatch && data.phone_number.length === 10) {
+                        contractHtml += ` Phone: <strong>${data.phone_number}</strong>.`;
+                    }
+
+                    
+                    if (data.goal.goal_text) {
+                        contractHtml += `<br><br><strong>North Star Goal:</strong> "${data.goal.goal_text}"`;
+                        if (data.goal.goal_duration_type === 'fixed' && data.goal.goal_duration_value) {
+                            contractHtml += ` with a deadline of <strong>${this.formatDate(data.goal.goal_duration_value)}</strong>.`;
+                        } else if (data.goal.goal_duration_type === 'estimate' && data.goal.goal_duration_value) {
+                            contractHtml += ` (Estimated timeline: <strong>${data.goal.goal_duration_value}</strong>)`;
+                        } else if (data.goal.goal_duration_type === 'ongoing') {
+                            contractHtml += ` This is an <strong>ongoing journey</strong>, not a finish line.`;
+                        }
+                    }
+
+                    
+                    if (data.daily_start_time && data.daily_end_time) {
+                        contractHtml += `<br><br><strong>Daily System Window:</strong> <strong>${this.formatTime(data.daily_start_time)}</strong> to <strong>${this.formatTime(data.daily_end_time)}</strong>`;
+                    }
+
+                    
+                    let triggerDesc = '';
+                    if (data.trigger_preference === 'time' && data.trigger_time) {
+                        triggerDesc = `at <strong>${this.formatTime(data.trigger_time)}</strong>`;
+                    } else if (data.trigger_preference === 'habit' && data.trigger_habit) {
+                        triggerDesc = `after <strong>${data.trigger_habit}</strong>`;
+                    } else if (data.trigger_preference === 'both' && data.trigger_time && data.trigger_habit) {
+                        triggerDesc = `at <strong>${this.formatTime(data.trigger_time)}</strong> and after <strong>${data.trigger_habit}</strong>`;
+                    } else if (data.trigger_preference === 'none') {
+                        triggerDesc = `using system start time`;
+                    }
+                    if (triggerDesc) {
+                        contractHtml += `. Initiation trigger: ${triggerDesc}.`;
+                    }
+
+                    
+                    if (data.buddy_name || data.tone || data.mantra) {
+                        contractHtml += `<br><br><strong>Feedback & Principles:</strong><br>`;
+                        if (data.buddy_name) contractHtml += `Accountability partner name: <strong>${data.buddy_name}</strong><br>`;
+                        if (data.tone) contractHtml += `Tone of support: <strong>${data.tone}</strong><br>`;
+                        if (data.mantra) contractHtml += `Guiding principle: "<strong>${data.mantra}</strong>"`;
+                    }
+
+                    
+                    if (data.monday_hour_1_enabled && data.monday_hour_1_day_of_week && data.monday_hour_1_time) {
+                        contractHtml += `<br><br><strong>Weekly System Check-In:</strong> Every <strong>${data.monday_hour_1_day_of_week}</strong> at <strong>${this.formatTime(data.monday_hour_1_time)}</strong>.`;
+                    }
+
+                    
+                    contractHtml += `<br><br>Signed with intention by: <strong>${data.signature || '___________________________'}</strong>`;
+                    contractHtml += `<br>Date: <strong>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>`;
+
+                    return contractHtml;
+                },
+
+                async submitContract() {
+                    if (!this.isFormComplete()) {
+                        alert("Please complete all sections to activate your system.");
+                        
+                        for (let i = 1; i <= this.totalContractSections; i++) {
+                            if (!this.isSectionComplete(i)) {
+                                this.activateSection(i);
+                                break;
+                            }
+                        }
+                        return;
+                    }
+
+                    const payload = {
+                        full_name: this.formData.full_name,
+                        email: this.formData.email,
+                        phone_number: this.formData.phone_number || null,
+                        timezone: this.formData.timezone,
+                        notification_preference: this.formData.notification_preference,
+                        daily_start_time: this.formData.daily_start_time,
+                        daily_end_time: this.formData.daily_end_time,
+                        trigger_type: this.formData.trigger_preference, 
+                        trigger_time: this.formData.trigger_time || null,
+                        trigger_habit: this.formData.trigger_habit || null,
+                        tone: this.formData.tone,
+                        buddy_name: this.formData.buddy_name,
+                        mantra: this.formData.mantra || null,
+                        is_hackathon_demo: true,
+                        monday_hour_1_enabled: this.formData.monday_hour_1_enabled,
+                        monday_hour_1_day_of_week: this.formData.monday_hour_1_enabled ? this.formData.monday_hour_1_day_of_week : null,
+                        monday_hour_1_time: this.formData.monday_hour_1_enabled ? this.formData.monday_hour_1_time : null,
+                        goal: {
+                            goal_text: this.formData.goal.goal_text,
+                            goal_duration_type: this.formData.goal.goal_duration_type,
+                            goal_duration_value: (this.formData.goal.goal_duration_type !== 'ongoing' && this.formData.goal.goal_duration_value) ? this.formData.goal.goal_duration_value : null
+                        }
+                    };
+
+                    console.log('Submitting system blueprint with payload:', payload);
+                    this.submitting = true;
+                    this.currentStep = 9; 
+
+                    try {
+                        
+                        const signupResponse = await fetch('http://127.0.0.1:8000/signup', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!signupResponse.ok) {
+                            const errorData = await signupResponse.json();
+                            throw new Error(errorData.detail || `Failed to submit contract (Status: ${signupResponse.status})`);
+                        }
+
+                        
+                        const userData = await signupResponse.json();
+                        const userId = userData.id;
+                        console.log('System blueprint submitted successfully. User ID:', userId);
+
+                        
+                        const simulateResponse = await fetch(`http://127.0.0.1:8000/simulate-day/${userId}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({})
+                        });
+
+                        if (!simulateResponse.ok) {
+                            const errorData = await simulateResponse.json();
+                            throw new Error(errorData.detail || `System simulation failed with status: ${simulateResponse.status}`);
+                        }
+
+                        const simulateResult = await simulateResponse.json();
+                        console.log('Simulation result:', simulateResult);
+
+                        if (simulateResult.status === 'success' && simulateResult.simulated_messages) {
+                            this.demoMessages = simulateResult.simulated_messages;
+                            this.currentStep = 10; 
+                            this.activeSection = 0; 
+
+                            // --- CONFETTI!!! ---
+                            
+                            confetti({
+                                particleCount: 150,
+                                spread: 90,
+                                origin: { y: 0.6 },
+                                colors: ['#DAA520', '#FFD700', '#FFFFFF', '#64748B'] 
+                            });
+
+                            
+                            setTimeout(() => {
+                                confetti({
+                                    particleCount: 100,
+                                    spread: 80,
+                                    origin: { x: 0.2, y: 0.7 },
+                                    colors: ['#DAA520', '#FFD700', '#64748B']
+                                });
+                            }, 200);
+
+                            setTimeout(() => {
+                                confetti({
+                                    particleCount: 100,
+                                    spread: 80,
+                                    origin: { x: 0.8, y: 0.7 },
+                                    colors: ['#DAA520', '#FFD700', '#FFFFFF']
+                                });
+                            }, 400);
+
+                        } else {
+                            throw new Error("Simulation response missing expected messages or simulation was not successful.");
+                        }
+
+                    } catch (error) {
+                        console.error('Error in system activation flow:', error);
+                        alert(`System Error! Something went wrong: ${error.message}.`);
+                        this.currentStep = 2; 
+                    } finally {
+                        this.submitting = false;
+                    }
+                },
+
+                addMinutes(timeString, minutesToAdd) {
+                    const [hours, minutes] = timeString.split(':').map(Number);
+                    const date = new Date();
+                    date.setHours(hours);
+                    date.setMinutes(minutes + minutesToAdd);
+                    return date.toTimeString().slice(0, 5);
+                },
+
+                restartFlow() {
+                    if (confirm("Confirm: Create new contract?")) {
+                        this.formData = {
+                            full_name: '', email: '', email_confirm: '', phone_number: '', phone_number_confirm: '',
+                            timezone: '', notification_preference: '',
+                            daily_start_time: '07:00', daily_end_time: '21:00',
+                            trigger_preference: '', trigger_time: '', trigger_habit: '',
+                            tone: 'Data-Driven & Objective', buddy_name: 'My AI Coach', mantra: 'The system runs the business, I run the system.',
+                            monday_hour_1_enabled: false, monday_hour_1_day_of_week: 'Sunday', monday_hour_1_time: '18:00',
+                            goal: { goal_text: '', goal_duration_type: '', goal_duration_value: '' },
+                            is_hackathon_demo: true, signature: '',
+                            currentDay: 1, totalGoalDays: 90
+                        };
+                        
+                        this.sectionsCompleted = {
+                            1: false, 2: false, 3: false, 4: false, 5: false, 6: false
+                        };
+                        this.demoMessages = [];
+                        this.currentStep = 1;
+                        this.activeSection = 0;
+                        this.isValidEmail = true; this.emailsMatch = true;
+                        this.isValidPhoneNumber = true; this.phoneNumbersMatch = true;
+                    }
+                },
+            }));
+        });
+    </script>
 </body>
 </html>
