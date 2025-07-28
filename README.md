@@ -29,8 +29,8 @@ Use the frontend form to generate your contract. The AI will handle the rest.
 
 - **Backend**: FastAPI, SQLAlchemy, Resend (email), OpenAI
 - **Frontend**: Alpine.js, HTML, CSS
-- **Deployment**: Vercel (frontend) + Railway (backend)
-- **Storage**: PostgreSQL (Railway)
+- **Deployment**: Vercel (frontend) + Render (backend)
+- **Storage**: PostgreSQL (Neon)
 
 ---
 
