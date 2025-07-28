@@ -25,6 +25,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["https://goalcontract.vercel.app"], 
+    allow_origins=["https://goalcontract-git-main-davids-projects-150da09a.vercel.app"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -412,3 +413,4 @@ async def send_test_email_to_user(user_id: UUID, db: Annotated[AsyncSession, Dep
         raise HTTPException(status_code=500, detail=f"Failed to send test email: {e}")
     
 
+    
