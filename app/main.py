@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 import datetime, logging, asyncio
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 
 
 from .database import get_db
@@ -18,15 +18,16 @@ from .utils.ai_utils import generate_openai_message
 from .utils import messaging_utils, email_utils
 
 
+
 app = FastAPI()
 
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["https://goalcontract.vercel.app"], 
     allow_credentials=True,
-    allow_methods=["*"],  
-    allow_headers=["*"],  
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
@@ -412,5 +413,5 @@ async def send_test_email_to_user(user_id: UUID, db: Annotated[AsyncSession, Dep
     
 
 @app.options("/signup")
-async def options_signup():
-    return JSONResponse(status_code=200)
+async def preflight_signup():
+    return Response(status_code=204)
