@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="api-base" content="https://goalcontract.onrender.com" />
+    
     <title>GoalContract: Engineer Your System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Karla:wght@700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
@@ -976,9 +978,10 @@
                     this.submitting = true;
                     this.currentStep = 9; 
 
+                    const apiBase = document.querySelector('meta[name="api-base"]')?.content || "http://localhost:8000";
+
                     try {
-                        
-                        const signupResponse = await fetch('https://goalcontract-production.up.railway.app/signup', {
+                        const signupResponse = await fetch(`${apiBase}/signup`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
@@ -991,13 +994,11 @@
                             throw new Error(errorData.detail || `Failed to submit contract (Status: ${signupResponse.status})`);
                         }
 
-                        
                         const userData = await signupResponse.json();
                         const userId = userData.id;
                         console.log('System blueprint submitted successfully. User ID:', userId);
 
-                        
-                        const simulateResponse = await fetch(`https://goalcontract-production.up.railway.app/simulate-day/${userId}`, {
+                        const simulateResponse = await fetch(`${apiBase}/simulate-day/${userId}`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({})
@@ -1007,7 +1008,7 @@
                             const errorData = await simulateResponse.json();
                             throw new Error(errorData.detail || `System simulation failed with status: ${simulateResponse.status}`);
                         }
-
+                        
                         const simulateResult = await simulateResponse.json();
                         console.log('Simulation result:', simulateResult);
 

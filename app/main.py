@@ -25,13 +25,19 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        '*'
+        "https://goalcontract.vercel.app",
+        "https://goalcontract.onrender.com",
+        "http://localhost:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+@app.get("/healthcheck")
+def health():
+    return {"status": "ok"}
 
 def format_time_label(time_obj: datetime.time) -> str:
     
